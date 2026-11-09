@@ -1,0 +1,455 @@
+/* ==========================================================================
+   Liquid glass: the material layer.
+
+   Every interactive surface is built from the same four ingredients:
+     1. a faint diagonal fill            (--lq-fill)
+     2. stacked inset shadows            dark top lip, bright bottom lip, inner halo
+     3. a light-catching rim             a conic gradient that rotates on hover/press
+     4. a sheen                          a diagonal highlight that slides across
+   Pressing tilts the surface back in 3D, like pushing a pane of glass.
+
+   Colours come only from tokens in glass.css (greys, no accent). Primary
+   actions use the inverted "ink" material: charcoal in light mode, frost in dark.
+   Loaded after the page stylesheets so it is the final word on materials.
+   ========================================================================== */
+
+@property --rim-angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: -75deg;
+}
+
+/* ---------------------------------------------------------------- material
+
+   Light material: buttons, chips, eyebrows, unselected options.
+   Ink material:   primary buttons and every "selected / current" state.      */
+
+.btn,
+.chip,
+.eyebrow,
+.hw-option label,
+.code-tabs__bar button,
+.sidenav a {
+  --m-fill: var(--lq-fill);
+  --m-top: var(--lq-top);
+  --m-bottom: var(--lq-bottom);
+  --m-halo: var(--lq-halo);
+  --m-halo-strong: var(--lq-halo-strong);
+  --m-drop: var(--lq-drop);
+  --m-lip: var(--lq-lip);
+  --m-rim-spot: var(--lq-rim-spot);
+  --m-rim-base: var(--lq-rim-base);
+  --m-text: var(--lq-text);
+  --m-text-shadow: var(--lq-text-shadow);
+}
+
+.btn--primary,
+.sidenav a[aria-current="page"],
+.code-tabs__bar button[aria-selected="true"],
+.hw-option input:checked + label,
+.msg--user,
+.kpi--hero,
+.arch__core,
+.step__n {
+  --m-fill: var(--ink-fill);
+  --m-top: var(--ink-top);
+  --m-bottom: var(--ink-bottom);
+  --m-halo: var(--ink-halo);
+  --m-halo-strong: var(--ink-halo);
+  --m-drop: var(--ink-drop);
+  --m-lip: var(--ink-bottom);
+  --m-rim-spot: var(--ink-rim-spot);
+  --m-rim-base: var(--ink-rim-base);
+  --m-text: var(--ink-text);
+  --m-text-shadow: var(--ink-text-shadow);
+}
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  min-height: 42px;
+  padding: 0 1.25em;
+  border: 0;
+  background: var(--m-fill);
+  color: var(--m-text);
+  font: 500 14px/1 var(--font-body);
+  letter-spacing: -0.01em;
+  text-shadow: 0 0.1em 0.08em var(--m-text-shadow);
+  box-shadow:
+    inset 0 0.125em 0.125em var(--m-top),
+    inset 0 -0.125em 0.125em var(--m-bottom),
+    0 0.25em 0.125em -0.125em var(--m-drop),
+    inset 0 0 0.1em 0.25em var(--m-halo);
+  backdrop-filter: blur(4px) saturate(150%);
+  -webkit-backdrop-filter: blur(4px) saturate(150%);
+  transform-origin: 50% 60%;
+  transition:
+    transform var(--hover-time) var(--ease),
+    box-shadow var(--hover-time) var(--ease),
+    text-shadow var(--hover-time) var(--ease),
+    background var(--hover-time) var(--ease),
+    --rim-angle 500ms ease;
+}
+
+.btn .icon {
+  filter: drop-shadow(0 0.08em 0.06em var(--m-text-shadow));
+}
+
+/* (3) the rim: a 1px ring, bright all round, with two darker light-catching
+   spots that swing around as --rim-angle animates */
+.btn::after,
+.sidenav a[aria-current="page"]::after,
+.code-tabs__bar button[aria-selected="true"]::after,
+.hw-option label::after,
+.msg--user::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    conic-gradient(
+      from var(--rim-angle) at 50% 50%,
+      var(--m-rim-spot) 0%,
+      transparent 5% 40%,
+      var(--m-rim-spot) 50%,
+      transparent 60% 95%,
+      var(--m-rim-spot) 100%
+    ),
+    linear-gradient(var(--m-rim-base), var(--m-rim-base));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+}
+
+/* (4) the sheen: a soft diagonal highlight parked off to the side */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+      -45deg,
+      transparent 0% 35%,
+      rgba(255, 255, 255, 0.45) 45% 52%,
+      transparent 60% 100%
+    )
+    0% 50% / 220% 220% no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  transition: background-position calc(var(--hover-time) * 1.3) var(--ease);
+}
+
+.btn:hover {
+  transform: scale(0.975);
+  text-decoration: none;
+  text-shadow: 0.025em 0.025em 0.025em var(--m-text-shadow);
+  --rim-angle: -125deg;
+  box-shadow:
+    inset 0 0.125em 0.125em var(--m-top),
+    inset 0 -0.125em 0.125em var(--m-bottom),
+    0 0.15em 0.05em -0.1em var(--m-drop),
+    inset 0 0 0.05em 0.1em var(--m-halo-strong);
+}
+
+.btn:hover::before {
+  background-position: 25% 50%;
+}
+
+/* press: tip the pane back and let the bottom lip catch the light */
+.btn:active {
+  transform: perspective(28em) rotateX(22deg) scale(0.975);
+  --rim-angle: -75deg;
+  box-shadow:
+    inset 0 0.125em 0.125em var(--m-top),
+    inset 0 -0.125em 0.125em var(--m-bottom),
+    0 0.125em 0.125em -0.125em var(--m-drop),
+    inset 0 0 0.1em 0.25em var(--m-halo),
+    0 0.225em 0.05em 0 rgba(0, 0, 0, 0.05),
+    0 0.25em 0 0 var(--m-lip),
+    inset 0 0.25em 0.05em 0 rgba(0, 0, 0, 0.15);
+}
+
+.btn:active::before {
+  background-position: 50% 15%;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn:focus-visible {
+  box-shadow:
+    var(--focus),
+    inset 0 0.125em 0.125em var(--m-top),
+    inset 0 -0.125em 0.125em var(--m-bottom);
+}
+
+/* ghost: clear glass until you touch it */
+.btn--ghost {
+  background: transparent;
+  box-shadow: none;
+  text-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.btn--ghost::after,
+.btn--ghost::before {
+  opacity: 0;
+  transition: opacity var(--hover-time) var(--ease);
+}
+
+.btn--ghost:hover {
+  background: var(--m-fill);
+}
+
+.btn--ghost:hover::after {
+  opacity: 1;
+}
+
+.btn--danger {
+  color: var(--bad);
+}
+
+.btn--sm {
+  min-height: 34px;
+  padding: 0 1em;
+  font-size: 13px;
+}
+
+.btn--lg {
+  min-height: 54px;
+  padding: 0 1.6em;
+  font-size: 16.5px;
+}
+
+.btn--icon {
+  width: 42px;
+  padding: 0;
+}
+
+.btn--sm.btn--icon {
+  width: 34px;
+}
+
+.btn--lg .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ---------------------------------------------------------------- small glass */
+
+.chip,
+.eyebrow {
+  border: 0;
+  background: var(--m-fill);
+  color: var(--m-text);
+  box-shadow:
+    inset 0 0.1em 0.1em var(--m-top),
+    inset 0 -0.1em 0.1em var(--m-bottom),
+    0 0.2em 0.12em -0.1em var(--m-drop),
+    inset 0 0 0.08em 0.18em var(--m-halo);
+  backdrop-filter: blur(4px) saturate(150%);
+  -webkit-backdrop-filter: blur(4px) saturate(150%);
+}
+
+.eyebrow {
+  padding: 7px 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-shadow: 0 0.1em 0.08em var(--m-text-shadow);
+}
+
+.pill {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.06);
+}
+
+.pill:not([class*="pill--"]) {
+  background: var(--glass-sunken);
+  color: var(--text-2);
+}
+
+:not(pre) > code {
+  background: var(--glass-sunken);
+  color: var(--text);
+  box-shadow: inset 0 1px 1px var(--lq-top);
+}
+
+/* ---------------------------------------------------------------- panels */
+
+.glass {
+  border-color: transparent;
+  box-shadow:
+    var(--shadow),
+    inset 0 0.08em 0.08em var(--lq-bottom),
+    inset 0 -0.1em 0.2em var(--lq-top),
+    inset 0 0 0.6em 0.1em var(--lq-halo);
+}
+
+/* the same rim, frozen at its resting angle, on every panel */
+.glass::before {
+  padding: 1px;
+  background:
+    conic-gradient(
+      from -75deg at 50% 50%,
+      var(--lq-rim-spot) 0%,
+      transparent 6% 40%,
+      color-mix(in srgb, var(--lq-rim-spot) 60%, transparent) 50%,
+      transparent 60% 94%,
+      var(--lq-rim-spot) 100%
+    ),
+    linear-gradient(var(--lq-rim-base), var(--lq-rim-base));
+  opacity: 0.55;
+}
+
+.glass--sunken {
+  box-shadow:
+    inset 0 0.125em 0.25em var(--lq-top),
+    inset 0 -0.08em 0.08em var(--lq-bottom);
+}
+
+/* blue-free hero tiles, now ink glass */
+.kpi--hero,
+.arch__core {
+  background: var(--m-fill);
+  color: var(--m-text);
+  box-shadow:
+    var(--shadow),
+    inset 0 0.15em 0.2em var(--m-top),
+    inset 0 -0.15em 0.2em var(--m-bottom),
+    inset 0 0 0.4em 0.15em var(--m-halo);
+}
+
+/* ---------------------------------------------------------------- inputs */
+
+.input,
+.select,
+.textarea {
+  border-color: transparent;
+  background-color: var(--glass-sunken);
+  box-shadow:
+    inset 0 0.125em 0.25em var(--lq-top),
+    inset 0 -0.08em 0.08em var(--lq-bottom);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  box-shadow:
+    var(--focus),
+    inset 0 0.125em 0.25em var(--lq-top);
+}
+
+/* ---------------------------------------------------------------- selected states */
+
+.sidenav a,
+.code-tabs__bar button,
+.hw-option label {
+  position: relative;
+  transition:
+    background var(--hover-time) var(--ease),
+    box-shadow var(--hover-time) var(--ease),
+    transform var(--hover-time) var(--ease),
+    color var(--hover-time) var(--ease),
+    --rim-angle 500ms ease;
+}
+
+.sidenav a:hover,
+.code-tabs__bar button:hover {
+  background: var(--lq-fill);
+  box-shadow:
+    inset 0 0.1em 0.1em var(--lq-top),
+    inset 0 -0.1em 0.1em var(--lq-bottom);
+}
+
+.sidenav a[aria-current="page"],
+.code-tabs__bar button[aria-selected="true"],
+.hw-option input:checked + label,
+.msg--user {
+  background: var(--m-fill);
+  color: var(--m-text);
+  text-shadow: 0 0.1em 0.08em var(--m-text-shadow);
+  box-shadow:
+    inset 0 0.125em 0.125em var(--m-top),
+    inset 0 -0.125em 0.125em var(--m-bottom),
+    0 0.3em 0.3em -0.15em var(--m-drop),
+    inset 0 0 0.1em 0.25em var(--m-halo);
+}
+
+.sidenav a[aria-current="page"]:hover,
+.code-tabs__bar button[aria-selected="true"]:hover {
+  --rim-angle: -125deg;
+}
+
+.sidenav a:active,
+.code-tabs__bar button:active,
+.hw-option label:active {
+  transform: perspective(28em) rotateX(18deg) scale(0.98);
+}
+
+.hw-option label {
+  border: 0;
+  background: var(--lq-fill);
+  box-shadow:
+    inset 0 0.1em 0.1em var(--lq-top),
+    inset 0 -0.1em 0.1em var(--lq-bottom),
+    0 0.2em 0.12em -0.1em var(--lq-drop);
+}
+
+.hw-option label::after {
+  opacity: 0.6;
+}
+
+.hw-option input:checked + label small {
+  color: color-mix(in srgb, var(--m-text) 70%, transparent);
+}
+
+.msg--user {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------- data marks */
+
+.meter {
+  box-shadow:
+    inset 0 0.1em 0.15em var(--lq-top),
+    inset 0 -0.05em 0.05em var(--lq-bottom);
+}
+
+tr:first-child .rank {
+  background: var(--ink-fill);
+  color: var(--ink-text);
+}
+
+.preview li.chosen {
+  background: var(--glass-strong);
+  box-shadow:
+    inset 0 0 0 1px var(--ink-300),
+    inset 0 -0.08em 0.08em var(--lq-bottom);
+}
+
+/* ---------------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn:active,
+  .sidenav a:active,
+  .code-tabs__bar button:active,
+  .hw-option label:active {
+    transform: scale(0.98);
+  }
+}
