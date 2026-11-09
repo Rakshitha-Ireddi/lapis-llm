@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LapisLLM · Every spare GPU, one endpoint</title>
+    <meta
+      name="description"
+      content="LapisLLM pools the gaming PCs, laptops and Apple Silicon Macs you already own into one self-hosted, OpenAI-compatible model endpoint."
+    />
+    <meta name="theme-color" content="#d8d8d8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)" />
+    <meta property="og:title" content="LapisLLM · Every spare GPU, one endpoint" />
+    <meta
+      property="og:description"
+      content="Self-hosted control plane that turns spare machines into one OpenAI-compatible endpoint."
+    />
+    <meta property="og:image" content="./og.png" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <script>
+      try {
+        var t = new URLSearchParams(location.search).get("theme") || localStorage.getItem("lapis-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="backdrop" aria-hidden="true">
+      <div class="orb orb--1"></div>
+      <div class="orb orb--2"></div>
+      <div class="orb orb--3"></div>
+    </div>
+
+    <!-- ===================================================== nav -->
+    <header class="nav-wrap">
+      <nav class="nav glass" aria-label="Main">
+        <a class="brand" href="./" data-logo>LapisLLM</a>
+        <ul class="nav__links" id="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#will-it-run">Will it run?</a></li>
+          <li><a href="#how">How it works</a></li>
+          <li><a href="#api">API</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <div class="nav__actions">
+          <button class="btn btn--ghost btn--icon" data-theme-toggle type="button" aria-label="Toggle theme">
+            <span data-icon="sun" class="when-dark"></span><span data-icon="moon" class="when-light"></span>
+          </button>
+          <a class="btn btn--ghost btn--icon" data-repo-link href="#" aria-label="GitHub repository"><span data-icon="github"></span></a>
+          <a class="btn btn--primary" href="./console.html">Open console <span data-icon="arrow"></span></a>
+          <button class="btn btn--ghost btn--icon nav__menu" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="nav-links">
+            <span data-icon="menu"></span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <!-- ===================================================== hero -->
+      <section class="hero container">
+        <div class="hero__copy">
+          <span class="eyebrow">Self-hosted · MIT · OpenAI-compatible</span>
+          <h1>Every spare GPU in the house.<br /><span class="gradient-text">One endpoint.</span></h1>
+          <p class="lead">
+            LapisLLM turns the old gaming PC, the work laptop and the Mac on the desk into one
+            model-serving fleet. Each machine runs a small agent; one master routes every
+            <code>/v1</code> request to whichever machine is serving that model.
+          </p>
+          <div class="hero__cta">
+            <a class="btn btn--primary btn--lg" href="./console.html">Try the live demo <span data-icon="arrow"></span></a>
+            <a class="btn btn--lg" href="#how">See how it works</a>
+          </div>
+          <ul class="hero__chips" aria-label="Supported platforms and runtimes">
+            <li class="chip"><span data-icon="windows"></span>Windows 11</li>
+            <li class="chip"><span data-icon="linux"></span>Linux</li>
+            <li class="chip"><span data-icon="apple"></span>Apple Silicon</li>
+            <li class="chip">llama.cpp</li>
+            <li class="chip">vLLM</li>
+            <li class="chip">MLX</li>
+          </ul>
+        </div>
+
+        <aside class="hero__panel glass glass--strong" aria-label="Live demo fleet preview">
+          <header class="panel-head">
+            <div>
+              <strong>Home fleet</strong>
+              <span class="muted">· simulated demo</span>
+            </div>
+            <span class="pill pill--online">live</span>
+          </header>
+          <div class="hero-kpis">
+            <div><span class="label">Tokens / s</span><strong id="hero-tps">0</strong></div>
+            <div><span class="label">Nodes</span><strong id="hero-nodes">0</strong></div>
+            <div><span class="label">Models</span><strong id="hero-models">0</strong></div>
+          </div>
+          <canvas id="hero-spark" class="hero-spark" height="64" aria-hidden="true"></canvas>
+          <ul class="hero-nodes" id="hero-node-list"></ul>
+          <div class="hero-endpoint mono">
+            <span class="muted">base_url</span> http://lapis.local:8080/v1
+          </div>
+        </aside>
+      </section>
+
+      <!-- ===================================================== problem / solution -->
+      <section class="section container" aria-labelledby="before-after">
+        <div class="section__head">
+          <span class="eyebrow">Before / after</span>
+          <h2 id="before-after">Three machines shouldn't mean three projects.</h2>
+          <p>
+            Without a control plane every box gets its own runtime, its own flags and its own port,
+            and every client has to remember which is which.
+          </p>
+        </div>
+        <div class="before-after">
+          <div class="terminals">
+            <article class="terminal glass">
+              <header><i></i><i></i><i></i><span>gaming-pc · PowerShell</span></header>
+              <pre><span class="p">PS&gt;</span> llama-server -m llama-8b.gguf --port 8081 -ngl 99
+<span class="c">listening on http://0.0.0.0:8081</span></pre>
+            </article>
+            <article class="terminal glass">
+              <header><i></i><i></i><i></i><span>linux-box · bash</span></header>
+              <pre><span class="p">$</span> vllm serve Qwen/Qwen2.5-32B-AWQ --port 8081
+<span class="bad">OSError: [Errno 98] Address already in use</span></pre>
+            </article>
+            <article class="terminal glass">
+              <header><i></i><i></i><i></i><span>macbook · zsh</span></header>
+              <pre><span class="p">%</span> mlx_lm.server --model mlx-community/gemma-2-9b --port 8082
+<span class="c">which port was the coder model on again?</span></pre>
+            </article>
+          </div>
+          <div class="after glass glass--strong">
+            <span class="pill">With LapisLLM</span>
+            <pre class="code"><span class="p">$</span> curl http://lapis.local:8080/v1/chat/completions \
+    -H <span class="s">"Authorization: Bearer $LAPIS_KEY"</span> \
+    -d <span class="s">'{"model": "qwen2.5-32b-instruct", ...}'</span>
+
+<span class="c"># → routed to linux-box (RTX 3090) · streamed back</span></pre>
+            <ul class="ticks">
+              <li><span data-icon="check"></span>One base URL, one API key per person or app</li>
+              <li><span data-icon="check"></span>Pick a model by name, never by machine</li>
+              <li><span data-icon="check"></span>Memory checked before anything starts</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== calculator -->
+      <section class="section container" id="will-it-run" aria-labelledby="wir-title">
+        <div class="section__head">
+          <span class="eyebrow">Will it run?</span>
+          <h2 id="wir-title">Size a model before you download 20&nbsp;GB.</h2>
+          <p>
+            The same memory formula the master uses for admission. Weights, KV cache for your
+            context window, and runtime overhead, checked against the machine you pick.
+          </p>
+        </div>
+
+        <div class="calc glass glass--strong">
+          <form class="calc__form" id="calc-form" onsubmit="return false">
+            <label class="field">
+              <span>Model</span>
+              <select class="select" id="calc-model"></select>
+            </label>
+            <label class="field">
+              <span>Parameters <output id="calc-params-out" class="mono"></output></span>
+              <input type="range" id="calc-params" min="0.1" max="120" step="0.1" value="8" />
+            </label>
+            <div class="calc__row">
+              <label class="field">
+                <span>Quantisation</span>
+                <select class="select" id="calc-quant">
+                  <option value="q4" selected>4-bit (Q4_K_M / AWQ)</option>
+                  <option value="q5">5-bit</option>
+                  <option value="q6">6-bit</option>
+                  <option value="q8">8-bit</option>
+                  <option value="fp16">16-bit (unquantised)</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Context</span>
+                <select class="select" id="calc-context">
+                  <option value="4096">4k tokens</option>
+                  <option value="8192" selected>8k tokens</option>
+                  <option value="16384">16k tokens</option>
+                  <option value="32768">32k tokens</option>
+                  <option value="131072">128k tokens</option>
+                </select>
+              </label>
+            </div>
+            <fieldset class="calc__hw">
+              <legend class="label">Machine</legend>
+              <div class="hw-options" id="calc-hw"></div>
+            </fieldset>
+          </form>
+
+          <div class="calc__result" aria-live="polite">
+            <div class="calc__verdict">
+              <span class="label">Needs</span>
+              <strong id="calc-needed" class="calc__big">0 GiB</strong>
+              <span id="calc-verdict" class="pill">–</span>
+            </div>
+            <div class="stack-bar" id="calc-bar" role="img" aria-label="Memory breakdown">
+              <span class="seg seg--w"></span><span class="seg seg--kv"></span><span class="seg seg--o"></span>
+              <i class="stack-bar__limit"></i>
+            </div>
+            <dl class="calc__legend">
+              <div><dt><i class="dot dot--w"></i>Weights</dt><dd id="calc-w">–</dd></div>
+              <div><dt><i class="dot dot--kv"></i>KV cache</dt><dd id="calc-kv">–</dd></div>
+              <div><dt><i class="dot dot--o"></i>Overhead</dt><dd id="calc-o">–</dd></div>
+              <div><dt><i class="dot dot--m"></i>Machine</dt><dd id="calc-mem">–</dd></div>
+            </dl>
+            <p class="calc__note" id="calc-note"></p>
+          </div>
+        </div>
+
+        <ul class="hw-cards" id="hw-cards" aria-label="What runs where"></ul>
+        <p class="footnote">
+          Rules of thumb for one context window with grouped-query attention. Real usage varies
+          with runtime, batch size and flash-attention. AMD and CPU-only nodes are on the roadmap.
+        </p>
+      </section>
+
+      <!-- ===================================================== how it works -->
+      <section class="section container" id="how" aria-labelledby="how-title">
+        <div class="section__head">
+          <span class="eyebrow">How it works</span>
+          <h2 id="how-title">Three steps per machine. Then forget which machine is which.</h2>
+        </div>
+        <ol class="steps">
+          <li class="step glass">
+            <span class="step__n">1</span>
+            <h3>Run the agent</h3>
+            <p>Install the package and point the agent at your master. It detects the GPU or unified memory and prints a fingerprint.</p>
+            <pre class="code"><span class="p">$</span> pip install lapis-llm
+<span class="p">$</span> lapis agent --master http://lapis.local:8080</pre>
+          </li>
+          <li class="step glass">
+            <span class="step__n">2</span>
+            <h3>Approve the fingerprint</h3>
+            <p>The machine shows up as <em>pending</em> on the Nodes page. Compare fingerprints, approve, and it receives its node secret.</p>
+            <pre class="code" data-copy="off"><span class="c">fingerprint</span>
+<span class="n">4B:55:2F:49:BA:50:40:20</span>
+<span class="n">F7:C3:57:C4:AE:95:F4:50</span></pre>
+          </li>
+          <li class="step glass">
+            <span class="step__n">3</span>
+            <h3>Place a model</h3>
+            <p>Add a model by size and runtime. Admission checks memory on every node; placement picks the tightest fit and explains every refusal.</p>
+            <pre class="code" data-copy="off"><span class="ok">✓</span> gaming-pc  <span class="c">needs 5.79, 6.40 free</span>
+<span class="bad">✗</span> macbook    <span class="c">runtime not offered</span>
+<span class="ok">✓</span> spark      <span class="c">121.00 free</span></pre>
+          </li>
+        </ol>
+
+        <div class="arch glass glass--strong" aria-label="Architecture">
+          <div class="arch__col">
+            <span class="label">Clients</span>
+            <div class="arch__box glass--sunken">VS Code agents</div>
+            <div class="arch__box glass--sunken">Python / Node scripts</div>
+            <div class="arch__box glass--sunken">Chat UIs</div>
+          </div>
+          <div class="arch__wire" aria-hidden="true"><span>/v1 + API key</span></div>
+          <div class="arch__col arch__master">
+            <span class="label">Master</span>
+            <div class="arch__core">
+              <strong>LapisLLM master</strong>
+              <ul>
+                <li>OpenAI-compatible router</li>
+                <li>Registry &amp; placement</li>
+                <li>Memory admission</li>
+                <li>Admin API · console · /metrics</li>
+              </ul>
+            </div>
+          </div>
+          <div class="arch__wire" aria-hidden="true"><span>node secret</span></div>
+          <div class="arch__col">
+            <span class="label">Agents</span>
+            <div class="arch__box glass--sunken"><span data-icon="windows"></span>gaming-pc · llama.cpp</div>
+            <div class="arch__box glass--sunken"><span data-icon="linux"></span>linux-box · vLLM</div>
+            <div class="arch__box glass--sunken"><span data-icon="apple"></span>macbook · MLX</div>
+            <div class="arch__box glass--sunken"><span data-icon="linux"></span>spark · vLLM</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== api -->
+      <section class="section container" id="api" aria-labelledby="api-title">
+        <div class="api">
+          <div class="section__head section__head--left">
+            <span class="eyebrow">One endpoint</span>
+            <h2 id="api-title">If it speaks OpenAI, it already works.</h2>
+            <p>
+              Chat completions, completions and embeddings, streaming included. Clients choose a
+              model by name; the router finds the machine. <code>GET /v1/models</code> lists
+              everything running across the fleet.
+            </p>
+            <ul class="ticks">
+              <li><span data-icon="check"></span>Scoped API keys, hashed at rest, shown once</li>
+              <li><span data-icon="check"></span><code>X-Lapis-Node</code> header tells you who answered</li>
+              <li><span data-icon="check"></span>Prometheus metrics on <code>/metrics</code></li>
+            </ul>
+          </div>
+          <div class="code-tabs glass glass--strong">
+            <div class="code-tabs__bar" role="tablist" aria-label="Client examples">
+              <button role="tab" aria-selected="true" data-tab="py">Python</button>
+              <button role="tab" aria-selected="false" data-tab="js">Node</button>
+              <button role="tab" aria-selected="false" data-tab="sh">curl</button>
+            </div>
+            <div class="code-tabs__panel" data-panel="py">
+<pre class="code"><span class="k">from</span> openai <span class="k">import</span> OpenAI
+
+client = OpenAI(
+    base_url=<span class="s">"http://lapis.local:8080/v1"</span>,
+    api_key=<span class="s">"lap_..."</span>,
+)
+stream = client.chat.completions.create(
+    model=<span class="s">"qwen2.5-coder-14b"</span>,  <span class="c"># served by studio-pc</span>
+    messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Write a haiku about GPUs"</span>}],
+    stream=<span class="k">True</span>,
+)
+<span class="k">for</span> chunk <span class="k">in</span> stream:
+    print(chunk.choices[<span class="n">0</span>].delta.content <span class="k">or</span> <span class="s">""</span>, end=<span class="s">""</span>)</pre>
+            </div>
+            <div class="code-tabs__panel" data-panel="js" hidden>
+<pre class="code"><span class="k">import</span> OpenAI <span class="k">from</span> <span class="s">"openai"</span>;
+
+<span class="k">const</span> client = <span class="k">new</span> OpenAI({
+  baseURL: <span class="s">"http://lapis.local:8080/v1"</span>,
+  apiKey: process.env.LAPIS_KEY,
+});
+<span class="k">const</span> res = <span class="k">await</span> client.chat.completions.create({
+  model: <span class="s">"llama-3.3-70b-instruct"</span>, <span class="c">// served by spark</span>
+  messages: [{ role: <span class="s">"user"</span>, content: <span class="s">"Plan my week"</span> }],
+});
+console.log(res.choices[<span class="n">0</span>].message.content);</pre>
+            </div>
+            <div class="code-tabs__panel" data-panel="sh" hidden>
+<pre class="code"><span class="p">$</span> curl http://lapis.local:8080/v1/embeddings \
+    -H <span class="s">"Authorization: Bearer $LAPIS_KEY"</span> \
+    -H <span class="s">"Content-Type: application/json"</span> \
+    -d <span class="s">'{"model": "nomic-embed-text", "input": "hello"}'</span>
+
+<span class="p">$</span> curl -s http://lapis.local:8080/v1/models \
+    -H <span class="s">"Authorization: Bearer $LAPIS_KEY"</span> | jq <span class="s">'.data[].id'</span></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================================================== features -->
+      <section class="section container" id="features" aria-labelledby="features-title">
+        <div class="section__head">
+          <span class="eyebrow">Features</span>
+          <h2 id="features-title">Small enough to understand. Complete enough to trust.</h2>
+        </div>
+        <ul class="features">
+          <li class="feature glass"><span class="feature__icon" data-icon="memory"></span><h3>Memory admission</h3><p>Every start is checked against free memory minus a reserve, per GPU on discrete cards. Refusals come with the numbers.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="gauge"></span><h3>Best-fit placement</h3><p>Small models pack onto small machines so the big box stays free for the 70B. Pin a model to a node whenever you like.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="shield"></span><h3>Fingerprint enrolment</h3><p>New machines wait for approval. Only the agent holding its identity can claim the node secret, so a leaked ID gets nobody in.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="refresh"></span><h3>Self-healing</h3><p>After an agent or master restart, models that should be running come back one at a time. Models you stopped stay stopped.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="key"></span><h3>Scoped API keys</h3><p>Separate keys per person or app, with <code>inference</code> and <code>metrics</code> scopes. Revoke one without touching the rest.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="move"></span><h3>Drain &amp; move</h3><p>Taking a machine offline? Drain it, move its models elsewhere, and clients never notice the address changed.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="backup"></span><h3>Backup &amp; restore</h3><p>Export models, nodes and keys as JSON. Restores preview exactly what will be added, kept and removed.</p></li>
+          <li class="feature glass"><span class="feature__icon" data-icon="audit"></span><h3>Audit &amp; metrics</h3><p>Every admin action is logged with who, what and when. Prometheus metrics for requests, tokens and node headroom.</p></li>
+        </ul>
+      </section>
+
+      <!-- ===================================================== faq -->
+      <section class="section container" id="faq" aria-labelledby="faq-title">
+        <div class="section__head">
+          <span class="eyebrow">FAQ</span>
+          <h2 id="faq-title">Questions people ask first</h2>
+        </div>
+        <div class="faq">
+          <details class="glass" open>
+            <summary>Is this a Kubernetes replacement?</summary>
+            <p>No. LapisLLM is deliberately small: a control plane for a handful of machines you own. No scheduler, no cluster networking, no hosted service.</p>
+          </details>
+          <details class="glass">
+            <summary>Do I need a GPU to try it?</summary>
+            <p>No. <code>lapis demo</code> starts a master and five simulated nodes on one laptop, and this website runs the same simulation in your browser.</p>
+          </details>
+          <details class="glass">
+            <summary>Which runtimes are supported?</summary>
+            <p>llama.cpp (<code>llama-server</code>) on Windows, Linux and macOS, vLLM on Linux, and MLX (<code>mlx_lm.server</code>) on Apple Silicon. The agent launches them as child processes and proxies requests.</p>
+          </details>
+          <details class="glass">
+            <summary>Can a model span two GPUs?</summary>
+            <p>Not yet. Admission checks each card on its own, so a 10&nbsp;GiB model will not be placed on two 8&nbsp;GiB cards. Tensor-parallel placement is on the roadmap.</p>
+          </details>
+          <details class="glass">
+            <summary>Is it safe to expose to the internet?</summary>
+            <p>Run it on a trusted LAN or behind a TLS reverse proxy. Admin sessions are signed, keys are hashed, and agents only accept calls carrying their node secret. mTLS between master and agents is planned.</p>
+          </details>
+        </div>
+      </section>
+
+      <!-- ===================================================== cta -->
+      <section class="section container">
+        <div class="cta glass glass--strong">
+          <div>
+            <h2>Try it on your laptop first.</h2>
+            <p>A master, five simulated machines and live traffic. No GPU required.</p>
+          </div>
+          <pre class="code"><span class="p">$</span> git clone <span data-repo-text>https://github.com/Rakshitha-Ireddi/lapis-llm</span>
+<span class="p">$</span> cd lapis-llm/server &amp;&amp; pip install -e .
+<span class="p">$</span> lapis demo
+<span class="c">  console: http://localhost:8080/console.html</span></pre>
+          <div class="cta__actions">
+            <a class="btn btn--primary btn--lg" href="./console.html">Open the console <span data-icon="arrow"></span></a>
+            <a class="btn btn--lg" data-repo-link href="#"><span data-icon="github"></span> Star on GitHub</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer container">
+      <div class="footer__brand">
+        <a class="brand" href="./" data-logo>LapisLLM</a>
+        <p>Named after lapis, the stone. Built from glass. MIT licensed.</p>
+      </div>
+      <nav class="footer__cols" aria-label="Footer">
+        <div>
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#will-it-run">Will it run?</a>
+          <a href="./console.html">Console demo</a>
+        </div>
+        <div>
+          <h4>Docs</h4>
+          <a data-repo-link data-repo-path="/blob/main/docs/architecture.md" href="#">Architecture</a>
+          <a data-repo-link data-repo-path="/tree/main/docs/adr" href="#">Decision records</a>
+          <a data-repo-link data-repo-path="/blob/main/docs/api.md" href="#">API reference</a>
+        </div>
+        <div>
+          <h4>Community</h4>
+          <a data-repo-link href="#">GitHub</a>
+          <a data-repo-link data-repo-path="/issues" href="#">Issues</a>
+          <a data-repo-link data-repo-path="/blob/main/CONTRIBUTING.md" href="#">Contributing</a>
+        </div>
+      </nav>
+      <p class="footer__fine">Screens and numbers on this site come from a simulated demo fleet.</p>
+    </footer>
+
+    <script type="module" src="/src/landing.ts"></script>
+  </body>
+</html>
