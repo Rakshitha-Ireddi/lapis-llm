@@ -1,0 +1,43 @@
+name: Bug report
+description: Something doesn't work the way the docs say it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. lapis demo
+        2. Start model X on node Y
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: part
+    attributes:
+      label: Which part?
+      options: [Master / API, Agent, Console (web), Website, Docker / deploy, Docs]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "lapis --version"
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, GPU, runtime (llama.cpp / vLLM / MLX) and versions.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      render: text
