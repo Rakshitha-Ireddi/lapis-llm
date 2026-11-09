@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LapisLLM Console</title>
+    <meta name="description" content="Manage your LapisLLM fleet: nodes, models, keys and live throughput." />
+    <meta name="theme-color" content="#d8d8d8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141416" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <script>
+      try {
+        var t = new URLSearchParams(location.search).get("theme") || localStorage.getItem("lapis-theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body class="console">
+    <a class="skip-link" href="#view">Skip to content</a>
+    <div class="backdrop" aria-hidden="true">
+      <div class="orb orb--1"></div>
+      <div class="orb orb--2"></div>
+      <div class="orb orb--3"></div>
+    </div>
+
+    <div class="shell">
+      <aside class="sidebar glass" id="sidebar">
+        <a class="brand" href="./" data-logo>LapisLLM</a>
+        <nav class="sidenav" aria-label="Console">
+          <a href="#/overview" data-route="overview"><span data-icon="overview"></span>Overview</a>
+          <a href="#/models" data-route="models"><span data-icon="models"></span>Models</a>
+          <a href="#/nodes" data-route="nodes"><span data-icon="nodes"></span>Nodes<span class="badge" id="pending-badge" hidden></span></a>
+          <a href="#/playground" data-route="playground"><span data-icon="chat"></span>Playground</a>
+          <a href="#/access" data-route="access"><span data-icon="key"></span>Access</a>
+          <a href="#/audit" data-route="audit"><span data-icon="audit"></span>Audit log</a>
+        </nav>
+        <div class="sidebar__foot">
+          <div class="mode glass--sunken" id="mode-card">
+            <span class="pill" id="mode-pill">demo</span>
+            <small id="mode-label">Simulated fleet</small>
+            <button class="btn btn--sm" type="button" id="connect-btn"><span data-icon="plug"></span>Connect a master</button>
+          </div>
+          <button class="btn btn--ghost" data-theme-toggle type="button">
+            <span data-icon="sun" class="when-dark"></span><span data-icon="moon" class="when-light"></span>
+            <span>Theme</span>
+          </button>
+        </div>
+      </aside>
+
+      <div class="main">
+        <header class="topbar">
+          <button class="btn btn--ghost btn--icon sidebar-toggle" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false">
+            <span data-icon="menu"></span>
+          </button>
+          <div>
+            <h1 id="view-title">Overview</h1>
+            <p id="view-sub" class="muted"></p>
+          </div>
+          <div class="topbar__actions" id="view-actions"></div>
+        </header>
+        <main id="view" class="view" tabindex="-1"></main>
+      </div>
+    </div>
+
+    <!-- connect / login -->
+    <dialog class="glass" id="connect-dialog" aria-labelledby="connect-title">
+      <form method="dialog" class="dialog" id="connect-form">
+        <header class="dialog__head">
+          <h2 id="connect-title">Connect to a master</h2>
+          <button class="btn btn--ghost btn--icon" value="cancel" formnovalidate aria-label="Close"><span data-icon="x"></span></button>
+        </header>
+        <p class="muted">
+          Point the console at a running <code>lapis master</code> or <code>lapis demo</code>. The master must allow this origin in <code>LAPIS_CORS_ORIGINS</code>.
+        </p>
+        <label class="field"><span>Master URL</span><input class="input" name="url" required placeholder="http://localhost:8080" /></label>
+        <label class="field"><span>Admin password</span><input class="input" name="password" type="password" required autocomplete="current-password" /></label>
+        <p class="form-error" id="connect-error" role="alert"></p>
+        <footer class="dialog__foot">
+          <button class="btn" value="cancel" formnovalidate>Cancel</button>
+          <button class="btn btn--primary" value="ok" id="connect-submit">Connect</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/console/main.ts"></script>
+  </body>
+</html>
