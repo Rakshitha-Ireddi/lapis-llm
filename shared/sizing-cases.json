@@ -1,0 +1,180 @@
+{
+  "_comment": "Shared by server/tests/test_sizing.py and web/tests/sizing.test.ts. Regenerate with scripts/gen_sizing_cases.py.",
+  "estimates": [
+    {
+      "params_b": 0.14,
+      "quant": "fp16",
+      "context": 2048,
+      "expected_gib": 0.91
+    },
+    {
+      "params_b": 1.5,
+      "quant": "q8",
+      "context": 4096,
+      "expected_gib": 2.34
+    },
+    {
+      "params_b": 3,
+      "quant": "q4",
+      "context": 4096,
+      "expected_gib": 2.51
+    },
+    {
+      "params_b": 7.6,
+      "quant": "q4",
+      "context": 16384,
+      "expected_gib": 6.54
+    },
+    {
+      "params_b": 8,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 5.79
+    },
+    {
+      "params_b": 8,
+      "quant": "q8",
+      "context": 8192,
+      "expected_gib": 9.52
+    },
+    {
+      "params_b": 9.2,
+      "quant": "q5",
+      "context": 8192,
+      "expected_gib": 7.55
+    },
+    {
+      "params_b": 14.7,
+      "quant": "q4",
+      "context": 16384,
+      "expected_gib": 10.85
+    },
+    {
+      "params_b": 14,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 9.19
+    },
+    {
+      "params_b": 24,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 14.72
+    },
+    {
+      "params_b": 32.5,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 19.38
+    },
+    {
+      "params_b": 32,
+      "quant": "q8",
+      "context": 32768,
+      "expected_gib": 39.23
+    },
+    {
+      "params_b": 70,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 39.65
+    },
+    {
+      "params_b": 70,
+      "quant": "fp16",
+      "context": 4096,
+      "expected_gib": 132.18
+    },
+    {
+      "params_b": 405,
+      "quant": "q4",
+      "context": 8192,
+      "expected_gib": 217.57
+    }
+  ],
+  "verdicts": [
+    {
+      "needed_gib": 5.79,
+      "memory_gib": 8,
+      "verdict": "comfortable"
+    },
+    {
+      "needed_gib": 6.9,
+      "memory_gib": 8,
+      "verdict": "tight"
+    },
+    {
+      "needed_gib": 7.5,
+      "memory_gib": 8,
+      "verdict": "tight"
+    },
+    {
+      "needed_gib": 9.18,
+      "memory_gib": 12,
+      "verdict": "comfortable"
+    },
+    {
+      "needed_gib": 19.1,
+      "memory_gib": 24,
+      "verdict": "comfortable"
+    },
+    {
+      "needed_gib": 23,
+      "memory_gib": 24,
+      "verdict": "too-big"
+    },
+    {
+      "needed_gib": 40,
+      "memory_gib": 128,
+      "verdict": "comfortable"
+    },
+    {
+      "needed_gib": 0,
+      "memory_gib": 8,
+      "verdict": "comfortable"
+    },
+    {
+      "needed_gib": 5,
+      "memory_gib": 0,
+      "verdict": "too-big"
+    }
+  ],
+  "suggestions": [
+    {
+      "params_b": 8,
+      "context": 8192,
+      "memory_gib": 8,
+      "quant": "q5"
+    },
+    {
+      "params_b": 8,
+      "context": 8192,
+      "memory_gib": 24,
+      "quant": "fp16"
+    },
+    {
+      "params_b": 14,
+      "context": 8192,
+      "memory_gib": 12,
+      "quant": "q4"
+    },
+    {
+      "params_b": 32,
+      "context": 8192,
+      "memory_gib": 24,
+      "quant": "q4"
+    },
+    {
+      "params_b": 70,
+      "context": 8192,
+      "memory_gib": 24,
+      "quant": null
+    },
+    {
+      "params_b": 70,
+      "context": 8192,
+      "memory_gib": 128,
+      "quant": "q8"
+    }
+  ]
+}
