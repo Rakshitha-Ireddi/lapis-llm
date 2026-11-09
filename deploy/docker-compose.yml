@@ -1,0 +1,36 @@
+# Two ways to run LapisLLM with Docker. From the repository root:
+#
+#   docker compose -f deploy/docker-compose.yml --profile demo up --build
+#     → master + five simulated nodes, console on http://localhost:8080/console.html
+#
+#   docker compose -f deploy/docker-compose.yml --profile master up -d --build
+#     → just the master; run `lapis agent` on each real machine.
+
+name: lapis
+
+services:
+  master:
+    profiles: ["master"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: lapis-llm:local
+    env_file: .env
+    ports:
+      - "${LAPIS_PORT:-8080}:8080"
+    volumes:
+      - lapis-data:/data
+    restart: unless-stopped
+
+  demo:
+    profiles: ["demo"]
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: lapis-llm:local
+    command: ["demo", "--host", "0.0.0.0", "--port", "8080", "--web-dir", "/app/web"]
+    ports:
+      - "${LAPIS_PORT:-8080}:8080"
+
+volumes:
+  lapis-data:
