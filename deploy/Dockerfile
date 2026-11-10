@@ -4,7 +4,7 @@
 #   docker build -f deploy/Dockerfile -t lapis-llm .
 
 # ---------------------------------------------------------------- web console
-FROM node:20-alpine AS web
+FROM node:26-alpine AS web
 WORKDIR /src/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci --no-audit --no-fund
