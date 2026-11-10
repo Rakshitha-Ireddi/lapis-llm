@@ -40,7 +40,7 @@ jobs:
         run: npx vite build
       - name: Add 404 page
         run: cp dist/index.html dist/404.html
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist
